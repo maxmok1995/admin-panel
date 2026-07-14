@@ -1,17 +1,17 @@
 import React, {useEffect, useState} from "react";
 import axios from "axios";
 import Loading from "../../components/Loading";
-import QRCode from "react-qr-code";
 
-// 后台审核充值:①存款设置(每币地址/网络/开关/最小额) ②审核队列(批准调金库入账/拒绝)。
+// 后台审核充值:①存款设置(每币地址/网络/开关/最小额/上传二维码图) ②审核队列(批准调金库入账/拒绝)。
 // 直连薄服务 /depo/*(axios baseURL + Bearer 由全局拦截器自动带上)。
 const NETWORKS = ["", "TRC20", "ERC20", "BEP20", "Polygon", "Solana", "Arbitrum", "Optimism", "BTC", "Lightning"];
+const fileToDataUrl = (file, cb) => { if (!file) return; const r = new FileReader(); r.onload = () => cb(r.result); r.readAsDataURL(file); };
 
 const Deposits = () => {
     const [methods, setMethods] = useState(null);
     const [requests, setRequests] = useState(null);
     const [reqStatus, setReqStatus] = useState("PENDING");
-    const [add, setAdd] = useState({currency: "USDT", network: "", address: "", minAmount: 0, enabled: true, note: ""});
+    const [add, setAdd] = useState({currency: "USDT", network: "", address: "", minAmount: 0, enabled: true, note: "", qrImage: ""});
     const [msg, setMsg] = useState("");
     const [busy, setBusy] = useState(false);
 
@@ -24,7 +24,7 @@ const Deposits = () => {
     const editMethod = (i, k, v) => setMethods(ms => ms.map((m, idx) => idx === i ? {...m, [k]: v} : m));
     const saveMethod = (m) => {
         setBusy(true);
-        axios.put("/depo/admin/methods", {id: m.id, currency: m.currency, network: m.network || "", address: m.address || "", enabled: !!m.enabled, minAmount: Number(m.minAmount) || 0, note: m.note || ""})
+        axios.put("/depo/admin/methods", {id: m.id, currency: m.currency, network: m.network || "", address: m.address || "", enabled: !!m.enabled, minAmount: Number(m.minAmount) || 0, note: m.note || "", qrImage: m.qrImage || ""})
             .then(() => { setMsg("已保存 " + m.currency + (m.network ? "-" + m.network : "")); loadMethods(); })
             .catch(e => setMsg("保存失败: " + e)).finally(() => setBusy(false));
     };
@@ -38,7 +38,7 @@ const Deposits = () => {
     const addMethod = () => {
         if (!add.address) { setMsg("请填写收款地址"); return; }
         saveMethod(add);
-        setAdd({currency: "USDT", network: "", address: "", minAmount: 0, enabled: true, note: ""});
+        setAdd({currency: "USDT", network: "", address: "", minAmount: 0, enabled: true, note: "", qrImage: ""});
     };
     const approve = (id) => {
         if (!window.confirm("确认批准并从金库入账?此操作会给用户实际到账。")) return;
@@ -63,16 +63,18 @@ const Deposits = () => {
             <h4 className="pb-2">存款设置(收款地址 / 开关)</h4>
             <table className="table table-bordered text-center col-12 striped">
                 <thead>
-                <tr><th>币种</th><th>网络</th><th>收款地址</th><th>最小额</th><th>开启</th><th>备注</th><th>操作</th></tr>
+                <tr><th>币种</th><th>网络</th><th>收款地址</th><th>二维码</th><th>最小额</th><th>开启</th><th>备注</th><th>操作</th></tr>
                 </thead>
                 <tbody>
-                {methods === null ? <tr><td colSpan="7" className="py-4"><Loading/></td></tr> :
+                {methods === null ? <tr><td colSpan="8" className="py-4"><Loading/></td></tr> :
                     methods.map((m, i) => <tr key={i}>
                         <td>{m.currency}</td>
                         <td><select className="form-control form-control-sm" value={m.network || ""} onChange={e => editMethod(i, "network", e.target.value)}>{NETWORKS.map(n => <option key={n} value={n}>{n || "(无)"}</option>)}</select></td>
-                        <td>
-                            <input className="form-control form-control-sm" value={m.address || ""} placeholder="收款地址" onChange={e => editMethod(i, "address", e.target.value)}/>
-                            {m.address && <div style={{background: "#fff", padding: "4px", width: "fit-content", margin: "4px auto 0"}}><QRCode value={m.address} size={64}/></div>}
+                        <td><input className="form-control form-control-sm" value={m.address || ""} placeholder="收款地址" onChange={e => editMethod(i, "address", e.target.value)}/></td>
+                        <td style={{minWidth: "130px"}}>
+                            {m.qrImage && <div><img src={m.qrImage} alt="qr" style={{width: "64px", height: "64px", objectFit: "contain", background: "#fff"}}/></div>}
+                            <input type="file" accept="image/*" style={{fontSize: "10px", width: "120px"}} onChange={e => fileToDataUrl(e.target.files[0], (d) => editMethod(i, "qrImage", d))}/>
+                            {m.qrImage && <button className="btn btn-sm btn-link text-danger p-0 d-block" onClick={() => editMethod(i, "qrImage", "")}>清除</button>}
                         </td>
                         <td><input className="form-control form-control-sm" style={{width: "90px"}} value={m.minAmount} onChange={e => editMethod(i, "minAmount", e.target.value)}/></td>
                         <td><input type="checkbox" checked={!!m.enabled} onChange={e => editMethod(i, "enabled", e.target.checked)}/></td>
@@ -87,6 +89,10 @@ const Deposits = () => {
                     <td><input className="form-control form-control-sm" value={add.currency} placeholder="币种如 USDT" onChange={e => setAdd({...add, currency: e.target.value.toUpperCase()})}/></td>
                     <td><select className="form-control form-control-sm" value={add.network} onChange={e => setAdd({...add, network: e.target.value})}>{NETWORKS.map(n => <option key={n} value={n}>{n || "(无)"}</option>)}</select></td>
                     <td><input className="form-control form-control-sm" value={add.address} placeholder="收款地址" onChange={e => setAdd({...add, address: e.target.value})}/></td>
+                    <td>
+                        {add.qrImage && <img src={add.qrImage} alt="qr" style={{width: "48px", height: "48px", objectFit: "contain", background: "#fff"}}/>}
+                        <input type="file" accept="image/*" style={{fontSize: "10px", width: "120px"}} onChange={e => fileToDataUrl(e.target.files[0], (d) => setAdd({...add, qrImage: d}))}/>
+                    </td>
                     <td><input className="form-control form-control-sm" style={{width: "90px"}} value={add.minAmount} onChange={e => setAdd({...add, minAmount: e.target.value})}/></td>
                     <td><input type="checkbox" checked={add.enabled} onChange={e => setAdd({...add, enabled: e.target.checked})}/></td>
                     <td><input className="form-control form-control-sm" value={add.note} onChange={e => setAdd({...add, note: e.target.value})}/></td>
