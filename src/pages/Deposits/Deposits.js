@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import axios from "axios";
 import Loading from "../../components/Loading";
+import QRCode from "react-qr-code";
 
 // 后台审核充值:①存款设置(每币地址/网络/开关/最小额) ②审核队列(批准调金库入账/拒绝)。
 // 直连薄服务 /depo/*(axios baseURL + Bearer 由全局拦截器自动带上)。
@@ -23,9 +24,16 @@ const Deposits = () => {
     const editMethod = (i, k, v) => setMethods(ms => ms.map((m, idx) => idx === i ? {...m, [k]: v} : m));
     const saveMethod = (m) => {
         setBusy(true);
-        axios.put("/depo/admin/methods", {currency: m.currency, network: m.network || "", address: m.address || "", enabled: !!m.enabled, minAmount: Number(m.minAmount) || 0, note: m.note || ""})
+        axios.put("/depo/admin/methods", {id: m.id, currency: m.currency, network: m.network || "", address: m.address || "", enabled: !!m.enabled, minAmount: Number(m.minAmount) || 0, note: m.note || ""})
             .then(() => { setMsg("已保存 " + m.currency + (m.network ? "-" + m.network : "")); loadMethods(); })
             .catch(e => setMsg("保存失败: " + e)).finally(() => setBusy(false));
+    };
+    const deleteMethod = (m) => {
+        if (!window.confirm("删除该存款设置行?")) return;
+        setBusy(true);
+        axios.delete("/depo/admin/methods/" + m.id)
+            .then(() => { setMsg("已删除"); loadMethods(); })
+            .catch(e => setMsg("删除失败: " + e)).finally(() => setBusy(false));
     };
     const addMethod = () => {
         if (!add.address) { setMsg("请填写收款地址"); return; }
@@ -62,11 +70,17 @@ const Deposits = () => {
                     methods.map((m, i) => <tr key={i}>
                         <td>{m.currency}</td>
                         <td><select className="form-control form-control-sm" value={m.network || ""} onChange={e => editMethod(i, "network", e.target.value)}>{NETWORKS.map(n => <option key={n} value={n}>{n || "(无)"}</option>)}</select></td>
-                        <td><input className="form-control form-control-sm" value={m.address || ""} placeholder="收款地址" onChange={e => editMethod(i, "address", e.target.value)}/></td>
+                        <td>
+                            <input className="form-control form-control-sm" value={m.address || ""} placeholder="收款地址" onChange={e => editMethod(i, "address", e.target.value)}/>
+                            {m.address && <div style={{background: "#fff", padding: "4px", width: "fit-content", margin: "4px auto 0"}}><QRCode value={m.address} size={64}/></div>}
+                        </td>
                         <td><input className="form-control form-control-sm" style={{width: "90px"}} value={m.minAmount} onChange={e => editMethod(i, "minAmount", e.target.value)}/></td>
                         <td><input type="checkbox" checked={!!m.enabled} onChange={e => editMethod(i, "enabled", e.target.checked)}/></td>
                         <td><input className="form-control form-control-sm" value={m.note || ""} onChange={e => editMethod(i, "note", e.target.value)}/></td>
-                        <td><button className="btn btn-sm btn-primary" disabled={busy} onClick={() => saveMethod(m)}>保存</button></td>
+                        <td style={{whiteSpace: "nowrap"}}>
+                            <button className="btn btn-sm btn-primary me-2" disabled={busy} onClick={() => saveMethod(m)}>保存</button>
+                            <button className="btn btn-sm btn-danger" disabled={busy} onClick={() => deleteMethod(m)}>删除</button>
+                        </td>
                     </tr>)}
                 {/* 新增一行(可加多网络,如 USDT-TRC20 / USDT-ERC20) */}
                 <tr>
