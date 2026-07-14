@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   admin-panel:
-    image: ghcr.io/opexdev/admin-panel:$TAG
+    image: ghcr.io/maxmok1995/admin-panel:$TAG
     build:
       context: .
       args:
