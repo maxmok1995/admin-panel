@@ -1,11 +1,10 @@
 import React, {useEffect, useState} from "react";
 import axios from "axios";
-import ScrollBar from "../../components/ScrollBar";
 import Loading from "../../components/Loading";
 
 // 后台审核充值:①存款设置(每币地址/网络/开关/最小额) ②审核队列(批准调金库入账/拒绝)。
 // 直连薄服务 /depo/*(axios baseURL + Bearer 由全局拦截器自动带上)。
-const CURRENCIES = ["USDT", "BTC", "ETH", "USDC"];
+const NETWORKS = ["", "TRC20", "ERC20", "BEP20", "Polygon", "Solana", "Arbitrum", "Optimism", "BTC", "Lightning"];
 
 const Deposits = () => {
     const [methods, setMethods] = useState(null);
@@ -48,7 +47,7 @@ const Deposits = () => {
             .catch(e => setMsg("拒绝失败: " + e)).finally(() => setBusy(false));
     };
 
-    return <ScrollBar>
+    return <div style={{height: "100%", overflowY: "auto"}}>
         <div className="col-12 d-flex flex-column px-5 py-4">
             {msg && <div className="alert alert-info py-2">{msg}</div>}
 
@@ -60,9 +59,9 @@ const Deposits = () => {
                 </thead>
                 <tbody>
                 {methods === null ? <tr><td colSpan="7" className="py-4"><Loading/></td></tr> :
-                    methods.map((m, i) => <tr key={m.currency + "-" + m.network}>
+                    methods.map((m, i) => <tr key={i}>
                         <td>{m.currency}</td>
-                        <td><input className="form-control form-control-sm" value={m.network || ""} placeholder="如 TRC20" onChange={e => editMethod(i, "network", e.target.value)}/></td>
+                        <td><select className="form-control form-control-sm" value={m.network || ""} onChange={e => editMethod(i, "network", e.target.value)}>{NETWORKS.map(n => <option key={n} value={n}>{n || "(无)"}</option>)}</select></td>
                         <td><input className="form-control form-control-sm" value={m.address || ""} placeholder="收款地址" onChange={e => editMethod(i, "address", e.target.value)}/></td>
                         <td><input className="form-control form-control-sm" style={{width: "90px"}} value={m.minAmount} onChange={e => editMethod(i, "minAmount", e.target.value)}/></td>
                         <td><input type="checkbox" checked={!!m.enabled} onChange={e => editMethod(i, "enabled", e.target.checked)}/></td>
@@ -71,8 +70,8 @@ const Deposits = () => {
                     </tr>)}
                 {/* 新增一行(可加多网络,如 USDT-TRC20 / USDT-ERC20) */}
                 <tr>
-                    <td><select className="form-control form-control-sm" value={add.currency} onChange={e => setAdd({...add, currency: e.target.value})}>{CURRENCIES.map(c => <option key={c}>{c}</option>)}</select></td>
-                    <td><input className="form-control form-control-sm" value={add.network} placeholder="网络" onChange={e => setAdd({...add, network: e.target.value})}/></td>
+                    <td><input className="form-control form-control-sm" value={add.currency} placeholder="币种如 USDT" onChange={e => setAdd({...add, currency: e.target.value.toUpperCase()})}/></td>
+                    <td><select className="form-control form-control-sm" value={add.network} onChange={e => setAdd({...add, network: e.target.value})}>{NETWORKS.map(n => <option key={n} value={n}>{n || "(无)"}</option>)}</select></td>
                     <td><input className="form-control form-control-sm" value={add.address} placeholder="收款地址" onChange={e => setAdd({...add, address: e.target.value})}/></td>
                     <td><input className="form-control form-control-sm" style={{width: "90px"}} value={add.minAmount} onChange={e => setAdd({...add, minAmount: e.target.value})}/></td>
                     <td><input type="checkbox" checked={add.enabled} onChange={e => setAdd({...add, enabled: e.target.checked})}/></td>
@@ -113,7 +112,7 @@ const Deposits = () => {
                 </tbody>
             </table>
         </div>
-    </ScrollBar>;
+    </div>;
 };
 
 export default Deposits;
