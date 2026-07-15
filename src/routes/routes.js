@@ -7,6 +7,7 @@ export const withdraws = "withdraws";
 export const showWithdraw = "withdraws/:id";
 
 export const deposits = "deposits";
+export const withdrawals = "withdrawals";
 
 export const users = "users";
 export const showUser = "users/:id";
