@@ -11,6 +11,7 @@ import UserInfo from "./pages/Users/UserInfo";
 import Withdraws from "./pages/Withdraws/Withdraws";
 import Deposits from "./pages/Deposits/Deposits";
 import Withdrawals from "./pages/Withdrawals/Withdrawals";
+import Ledger from "./pages/Ledger/Ledger";
 import {useEffect, useState} from "react";
 import WithdrawInfo from "./pages/Withdraws/WithdrawInfo";
 import KycUsers from "./pages/KycUsers/KycUsers";
@@ -78,6 +79,7 @@ function Opex() {
                     <Route path={RoutesName.showWithdraw} element={<WithdrawInfo/>}/>
                     <Route path={RoutesName.deposits} element={<Deposits/>}/>
                     <Route path={RoutesName.withdrawals} element={<Withdrawals/>}/>
+                    <Route path={RoutesName.ledger} element={<Ledger/>}/>
                     <Route path={RoutesName.KYC} element={<KycUsers/>}/>
                     <Route path={RoutesName.WhiteList} element={<WhiteList/>}/>
                     <Route path={RoutesName.Wallet} element={<Wallet/>}/>

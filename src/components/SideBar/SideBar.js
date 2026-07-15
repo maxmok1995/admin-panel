@@ -42,6 +42,12 @@ const SideBar = ({closeMenu}) => {
                 </NavLink>
             </li>
             <li className="has-child">
+                <NavLink to={Routes.ledger}>
+                    <Icon iconName="icon-layersm text-color font-size-md-plus"/>
+                    <span className="">Ledger</span>
+                </NavLink>
+            </li>
+            <li className="has-child">
                 <NavLink to={Routes.KYC}>
                     <Icon iconName="icon-kycicon text-color font-size-md-plus"/>
                     <span className="">KYC</span>
