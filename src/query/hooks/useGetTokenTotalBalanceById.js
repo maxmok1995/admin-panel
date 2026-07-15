@@ -5,7 +5,7 @@ export const useGetTokenTotalBalanceById = (chainId) => {
     return useQuery(
         ['token-Total-balance', chainId], async () => {
             /*if (chainId === null) return;*/
-            const {data} = await axios.get(`https://walletstat.exky.io/v1/balance/token/${chainId}/total`)
+            const {data} = await axios.get(`/walletstat/v1/balance/token/${chainId}/total`)
             return data;
 
         },

@@ -4,7 +4,7 @@ import axios from "axios";
 export const useGetChains = () => {
     return useQuery(
         ['chains'], async () => {
-            const {data} = await axios.get('https://walletstat.exky.io/v1/chain')
+            const {data} = await axios.get('/walletstat/v1/chain')
             return data;
         },
         {
