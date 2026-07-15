@@ -14,14 +14,25 @@ const Ledger = () => {
     const [entries, setEntries] = useState(null);
     const [filter, setFilter] = useState({book: "", currency: ""});
     const [form, setForm] = useState({userUuid: "", currency: "USDC", amount: "", direction: "ADD", reason: ""});
+    const [hlBal, setHlBal] = useState(null);
+    const [hlForm, setHlForm] = useState({currency: "USDC", amount: "", direction: "TO_HL"});
     const [msg, setMsg] = useState("");
     const [busy, setBusy] = useState(false);
 
     const loadStats = () => axios.get("/ledger/admin/stats").then(r => setStats(r.data)).catch(e => setMsg("加载对账失败: " + e));
+    const loadHl = () => axios.get("/ledger/admin/hl/balance").then(r => setHlBal(r.data)).catch(() => setHlBal([]));
+    const moveHl = () => {
+        if (!(Number(hlForm.amount) > 0)) { setMsg("请填写有效金额"); return; }
+        if (!window.confirm("确认" + (hlForm.direction === "TO_HL" ? "金库 → HL 库" : "HL 库 → 金库") + " 划转?")) return;
+        setBusy(true);
+        axios.post("/ledger/admin/hl", {currency: hlForm.currency.toUpperCase(), amount: Number(hlForm.amount), direction: hlForm.direction})
+            .then(() => { setMsg("HL 划转已执行"); setHlForm({...hlForm, amount: ""}); loadHl(); loadStats(); loadEntries(); })
+            .catch(e => setMsg("HL 划转失败: " + (e?.response?.data?.detail || e?.response?.data?.error || e))).finally(() => setBusy(false));
+    };
     const loadAdjusts = (s) => { setAdjusts(null); axios.get("/ledger/admin/adjustments?status=" + s).then(r => setAdjusts(r.data)).catch(e => setMsg("加载调账失败: " + e)); };
     const loadEntries = () => { setEntries(null); axios.get("/ledger/admin/entries?book=" + filter.book + "&currency=" + filter.currency).then(r => setEntries(r.data)).catch(e => setMsg("加载明细失败: " + e)); };
 
-    useEffect(() => { loadStats(); loadEntries(); }, []);
+    useEffect(() => { loadStats(); loadEntries(); loadHl(); }, []);
     useEffect(() => { loadAdjusts(adjStatus); }, [adjStatus]);
 
     const submitAdjust = () => {
@@ -105,6 +116,20 @@ const Ledger = () => {
                         </tr>)}
                 </tbody>
             </table>
+
+            {/* ===== HL 库(金库↔HL 划转)===== */}
+            <h4 className="pt-4 pb-2">HL 库(连结 Hyperliquid 的资金池)</h4>
+            <div className="row g-2 align-items-end pb-2">
+                <div className="col-auto"><label className="form-label mb-0">方向</label>
+                    <select className="form-control form-control-sm" value={hlForm.direction} onChange={e => setHlForm({...hlForm, direction: e.target.value})}>
+                        <option value="TO_HL">金库 → HL 库</option><option value="FROM_HL">HL 库 → 金库</option></select></div>
+                <div className="col-auto"><label className="form-label mb-0">币种</label>
+                    <input className="form-control form-control-sm" style={{width: "90px"}} value={hlForm.currency} onChange={e => setHlForm({...hlForm, currency: e.target.value})}/></div>
+                <div className="col-auto"><label className="form-label mb-0">金额</label>
+                    <input className="form-control form-control-sm" style={{width: "120px"}} value={hlForm.amount} onChange={e => setHlForm({...hlForm, amount: e.target.value})}/></div>
+                <div className="col-auto"><button className="btn btn-sm btn-warning" disabled={busy} onClick={moveHl}>划转</button></div>
+                <div className="col-auto text-muted" style={{fontSize: "12px"}}>HL 库余额:{hlBal === null ? "…" : (hlBal.length === 0 ? "空" : hlBal.map(b => `${b.balance} ${b.currency}(${b.walletType})`).join(" · "))}</div>
+            </div>
 
             {/* ===== ③ 账本明细 ===== */}
             <h4 className="pt-4 pb-2">账本明细</h4>
