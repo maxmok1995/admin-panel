@@ -14,7 +14,7 @@ const AuditLog = () => {
     const load = useCallback(() => {
         setRows(null);
         axios.get("/depo/admin/audit?limit=" + limit)
-            .then(r => setRows(r.data || []))
+            .then(r => setRows(Array.isArray(r.data) ? r.data : []))
             .catch(e => { setMsg("加载失败:" + (e?.response?.data?.error || e.message)); setRows([]); });
     }, [limit]);
 

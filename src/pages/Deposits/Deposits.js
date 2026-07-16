@@ -15,8 +15,8 @@ const Deposits = () => {
     const [msg, setMsg] = useState("");
     const [busy, setBusy] = useState(false);
 
-    const loadMethods = () => axios.get("/depo/admin/methods").then(r => setMethods(r.data)).catch(e => setMsg("加载存款设置失败: " + e));
-    const loadRequests = (s) => { setRequests(null); axios.get("/depo/admin/requests?status=" + s).then(r => setRequests(r.data)).catch(e => setMsg("加载申请失败: " + e)); };
+    const loadMethods = () => axios.get("/depo/admin/methods").then(r => setMethods(Array.isArray(r.data) ? r.data : [])).catch(e => setMsg("加载存款设置失败: " + e));
+    const loadRequests = (s) => { setRequests(null); axios.get("/depo/admin/requests?status=" + s).then(r => setRequests(Array.isArray(r.data) ? r.data : [])).catch(e => setMsg("加载申请失败: " + e)); };
 
     useEffect(() => { loadMethods(); }, []);
     useEffect(() => { loadRequests(reqStatus); }, [reqStatus]);

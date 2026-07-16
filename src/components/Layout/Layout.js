@@ -1,18 +1,22 @@
-import {Outlet} from 'react-router-dom';
+import {Outlet, useLocation} from 'react-router-dom';
 import Topbar from '../TopBar/TopBar';
 import SideBar from './../SideBar/SideBar';
 import React, {useState} from 'react';
 import {Toaster} from "react-hot-toast";
+import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 
 const Layout = () => {
     const [closeMenu, setCloseMenu] = useState(false);
+    const location = useLocation();
     return (
         <div className="layout">
             <SideBar closeMenu={closeMenu}/>
             <div className={`content ${closeMenu ? "close" : "open"}`}>
                 <Topbar setCloseMenu={setCloseMenu}/>
                 <div className="main">
-                    <Outlet/>
+                    <ErrorBoundary key={location.pathname}>
+                        <Outlet/>
+                    </ErrorBoundary>
                 </div>
                 <Toaster position="bottom-left" toastOptions={
                     {
