@@ -17,4 +17,6 @@ export const KYC = "kyc";
 export const WhiteList = "white-list";
 export const Wallet = "wallet";
 export const ChainAndToken = "chain-token";
+export const createCoin = "create-coin";
+export const auditLog = "audit-log";
 

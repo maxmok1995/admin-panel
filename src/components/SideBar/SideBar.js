@@ -71,6 +71,18 @@ const SideBar = ({closeMenu}) => {
                     <span className="">Chain And Token</span>
                 </NavLink>
             </li>
+            <li className="has-child">
+                <NavLink to={Routes.createCoin}>
+                    <Icon iconName="icon-layersm text-color font-size-md-plus"/>
+                    <span className="">Create Coin</span>
+                </NavLink>
+            </li>
+            <li className="has-child">
+                <NavLink to={Routes.auditLog}>
+                    <Icon iconName="icon-layersm text-color font-size-md-plus"/>
+                    <span className="">Audit Log</span>
+                </NavLink>
+            </li>
         </ul>
 
     </div>

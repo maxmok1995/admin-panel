@@ -23,6 +23,8 @@ import setupAxios from "./setupAxios";
 import WhiteList from "./pages/WhiteList/WhiteList";
 import Wallet from "./pages/Wallet/Wallet";
 import ChainAndToken from "./pages/ChainAndToken/ChainAndToken";
+import CreateCoin from "./pages/CreateCoin/CreateCoin";
+import AuditLog from "./pages/AuditLog/AuditLog";
 
 
 function Opex() {
@@ -71,7 +73,7 @@ function Opex() {
             <Route element={<Layout/>}>
 
                 {/* private routes */}
-                <Route element={<RequireAuth allowedRoles={[ROLES.admin]}/>}>
+                <Route element={<RequireAuth allowedRoles={[ROLES.admin, "super_admin", "admin_system"]}/>}>
                     <Route path="/" element={<Dashboard/>}/>
                     <Route path={RoutesName.users} element={<Users/>}/>
                     <Route path={RoutesName.showUser} element={<UserInfo/>}/>
@@ -84,6 +86,8 @@ function Opex() {
                     <Route path={RoutesName.WhiteList} element={<WhiteList/>}/>
                     <Route path={RoutesName.Wallet} element={<Wallet/>}/>
                     <Route path={RoutesName.ChainAndToken} element={<ChainAndToken/>}/>
+                    <Route path={RoutesName.createCoin} element={<CreateCoin/>}/>
+                    <Route path={RoutesName.auditLog} element={<AuditLog/>}/>
                 </Route>
                 <Route path="unauthorized" element={<Unauthorized/>}/>
             </Route>
