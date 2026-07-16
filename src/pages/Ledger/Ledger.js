@@ -19,8 +19,8 @@ const Ledger = () => {
     const [msg, setMsg] = useState("");
     const [busy, setBusy] = useState(false);
 
-    const loadStats = () => axios.get("/ledger/admin/stats").then(r => setStats(r.data)).catch(e => setMsg("加载对账失败: " + e));
-    const loadHl = () => axios.get("/ledger/admin/hl/balance").then(r => setHlBal(r.data)).catch(() => setHlBal([]));
+    const loadStats = () => axios.get("/ledger/admin/stats").then(r => setStats(r.data && typeof r.data === "object" ? r.data : {})).catch(e => setMsg("加载对账失败: " + e));
+    const loadHl = () => axios.get("/ledger/admin/hl/balance").then(r => setHlBal(Array.isArray(r.data) ? r.data : [])).catch(() => setHlBal([]));
     const moveHl = () => {
         if (!(Number(hlForm.amount) > 0)) { setMsg("请填写有效金额"); return; }
         if (!window.confirm("确认" + (hlForm.direction === "TO_HL" ? "金库 → HL 库" : "HL 库 → 金库") + " 划转?")) return;
@@ -29,8 +29,8 @@ const Ledger = () => {
             .then(() => { setMsg("HL 划转已执行"); setHlForm({...hlForm, amount: ""}); loadHl(); loadStats(); loadEntries(); })
             .catch(e => setMsg("HL 划转失败: " + (e?.response?.data?.detail || e?.response?.data?.error || e))).finally(() => setBusy(false));
     };
-    const loadAdjusts = (s) => { setAdjusts(null); axios.get("/ledger/admin/adjustments?status=" + s).then(r => setAdjusts(r.data)).catch(e => setMsg("加载调账失败: " + e)); };
-    const loadEntries = () => { setEntries(null); axios.get("/ledger/admin/entries?book=" + filter.book + "&currency=" + filter.currency).then(r => setEntries(r.data)).catch(e => setMsg("加载明细失败: " + e)); };
+    const loadAdjusts = (s) => { setAdjusts(null); axios.get("/ledger/admin/adjustments?status=" + s).then(r => setAdjusts(Array.isArray(r.data) ? r.data : [])).catch(e => setMsg("加载调账失败: " + e)); };
+    const loadEntries = () => { setEntries(null); axios.get("/ledger/admin/entries?book=" + filter.book + "&currency=" + filter.currency).then(r => setEntries(Array.isArray(r.data) ? r.data : [])).catch(e => setMsg("加载明细失败: " + e)); };
 
     useEffect(() => { loadStats(); loadEntries(); loadHl(); }, []);
     useEffect(() => { loadAdjusts(adjStatus); }, [adjStatus]);

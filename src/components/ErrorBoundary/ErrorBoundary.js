@@ -1,39 +1,51 @@
 import React from "react";
 
-// 全局错误边界:任何子树渲染抛错时,显示可恢复的提示而非整页白屏。
-// 白屏根因常见:后端/网关(如 Cloudflare 挑战)返回了非预期内容(HTML 而非 JSON),
-// 页面对其做 .map/.filter 抛错。这里兜住,给「重试」而不是空白。
+// 全局错误边界:子树渲染抛错时显示【醒目、可读】的错误卡片而非白屏。
+// 深色高对比卡片 + 错误信息 + 堆栈,方便直接看到根因并重试。
 class ErrorBoundary extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {hasError: false, msg: ""};
+        this.state = {hasError: false, msg: "", stack: ""};
     }
 
     static getDerivedStateFromError(error) {
-        return {hasError: true, msg: (error && error.message) || String(error)};
+        return {
+            hasError: true,
+            msg: (error && error.message) || String(error),
+            stack: (error && error.stack) ? String(error.stack).split("\n").slice(0, 6).join("\n") : "",
+        };
     }
 
     componentDidCatch(error, info) {
-        // 打到控制台便于排查,不上报外部
         console.error("[ErrorBoundary]", error, info);
     }
 
     render() {
         if (this.state.hasError) {
             return (
-                <div style={{padding: "40px", textAlign: "center", color: "#ddd"}}>
-                    <h4 style={{marginBottom: 12}}>页面渲染出错</h4>
-                    <p style={{opacity: 0.7, fontSize: 13, maxWidth: 520, margin: "0 auto 18px"}}>
-                        {this.state.msg}
-                    </p>
-                    <button className="btn btn-primary btn-sm px-4"
-                            onClick={() => this.setState({hasError: false, msg: ""})}>
-                        重试
-                    </button>
-                    <button className="btn btn-outline-secondary btn-sm px-4 ms-2"
-                            onClick={() => window.location.reload()}>
-                        刷新页面
-                    </button>
+                <div style={{padding: "32px"}}>
+                    <div style={{
+                        maxWidth: 720, margin: "0 auto", background: "#1f2233", color: "#f0f0f5",
+                        border: "1px solid #d73e36", borderRadius: 10, padding: "24px 28px",
+                    }}>
+                        <div style={{fontSize: 18, fontWeight: "bold", color: "#ff6b63", marginBottom: 10}}>
+                            ⚠ 页面渲染出错
+                        </div>
+                        <div style={{fontSize: 14, marginBottom: 12, wordBreak: "break-word"}}>
+                            {this.state.msg}
+                        </div>
+                        {this.state.stack &&
+                            <pre style={{
+                                fontSize: 11, background: "#12141f", color: "#9aa0b5", padding: 12,
+                                borderRadius: 6, overflowX: "auto", marginBottom: 16, whiteSpace: "pre-wrap",
+                            }}>{this.state.stack}</pre>}
+                        <div>
+                            <button className="btn btn-primary btn-sm px-4"
+                                    onClick={() => this.setState({hasError: false, msg: "", stack: ""})}>重试</button>
+                            <button className="btn btn-outline-light btn-sm px-4 ms-2"
+                                    onClick={() => window.location.reload()}>刷新页面</button>
+                        </div>
+                    </div>
                 </div>
             );
         }
