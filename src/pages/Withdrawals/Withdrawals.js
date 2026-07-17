@@ -100,18 +100,27 @@ const Withdrawals = () => {
             </div>
             <table className="table table-bordered text-center col-12 striped">
                 <thead>
-                <tr><th>#</th><th>用户</th><th>币种</th><th>网络</th><th>提现地址</th><th>金额</th><th>时间</th><th>操作</th></tr>
+                <tr><th>#</th><th>用户</th><th>类型</th><th>币种/法币</th><th>网络/国家</th><th>提现地址 / 银行信息</th><th>金额</th><th>时间</th><th>操作</th></tr>
                 </thead>
                 <tbody>
-                {requests === null ? <tr><td colSpan="8" className="py-4"><Loading/></td></tr> :
-                    requests.length === 0 ? <tr><td colSpan="8" className="py-4">无 {reqStatus} 申请</td></tr> :
+                {requests === null ? <tr><td colSpan="9" className="py-4"><Loading/></td></tr> :
+                    requests.length === 0 ? <tr><td colSpan="9" className="py-4">无 {reqStatus} 申请</td></tr> :
                         requests.map(r => <tr key={r.id}>
                             <td>{r.id}</td>
                             <td style={{fontSize: "11px"}}>{r.userUuid}</td>
+                            <td>{r.kind === "bank" ? "银行卡" : "加密"}</td>
                             <td>{r.currency}</td>
                             <td>{r.network}</td>
-                            <td style={{fontSize: "11px", wordBreak: "break-all"}}>{r.address}</td>
-                            <td>{r.amount}</td>
+                            <td style={{fontSize: "11px", wordBreak: "break-all", textAlign: "left"}}>
+                                {r.kind === "bank"
+                                    ? <>银行:{r.bankName}<br/>账号:{r.bankAccount}<br/>持卡人:{r.accountHolder}</>
+                                    : r.address}
+                            </td>
+                            <td style={{fontSize: "12px"}}>
+                                {r.kind === "bank"
+                                    ? <>{r.fiatAmount} {r.currency}<br/><span style={{opacity: 0.7}}>扣 {r.amount} USDC<br/>(1USDC≈{r.rate})</span></>
+                                    : r.amount}
+                            </td>
                             <td style={{fontSize: "11px"}}>{r.createdAt}</td>
                             <td style={{whiteSpace: "nowrap"}}>{reqStatus === "PENDING" ?
                                 <>

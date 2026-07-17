@@ -86,10 +86,11 @@ const UserInfo = () => {
                 <div className="col-12 userInfoBox my-5">
                     <h4 className="py-3 primary-bg rounded d-flex justify-content-center align-items-center">User
                         Documents</h4>
-                    <div className="d-flex flex-row col-12">
-                        <UserImageBox url={user?.attributes?.acceptFormPath?.[0]} title="Accept form"/>
-                        <UserImageBox url={user?.attributes?.selfiePath?.[0]} title="Selfie"/>
-                        <UserImageBox url={user?.attributes?.idCardPath?.[0]} title="ID Card"/>
+                    <div className="d-flex flex-row flex-wrap col-12">
+                        <UserImageBox url={user?.attributes?.idCardPath?.[0]} title="身份证正面 ID Front"/>
+                        <UserImageBox url={user?.attributes?.acceptFormPath?.[0]} title="身份证反面 ID Back"/>
+                        <UserImageBox url={user?.attributes?.selfiePath?.[0]} title="手持正面 Hold Front"/>
+                        <UserImageBox url={user?.attributes?.selfieBackPath?.[0]} title="手持反面 Hold Back"/>
                     </div>
                 </div>
                 {
